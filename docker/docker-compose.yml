@@ -1,0 +1,33 @@
+services:
+  tritonflow-dev:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: dev
+    volumes:
+      - ..:/workspace
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    stdin_open: true
+    tty: true
+
+  tritonflow-bench:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: runtime
+    command: ["benchmark", "run", "--suite", "all", "--export-csv", "/results/benchmarks.csv"]
+    volumes:
+      - ../results:/results
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]

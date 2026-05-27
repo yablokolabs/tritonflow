@@ -1,0 +1,54 @@
+# Byte-compiled
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Linting
+.mypy_cache/
+.ruff_cache/
+
+# Benchmark results
+results/
+*.csv
+*.json
+
+# Profiling
+*.nsys-rep
+*.sqlite
+*.qdrep
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+docker/*.log
+
+# Notebooks checkpoints
+.ipynb_checkpoints/
+
+# Triton cache
+.triton/

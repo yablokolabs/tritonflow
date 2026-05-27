@@ -1,0 +1,51 @@
+name: Benchmarks
+
+on:
+  workflow_dispatch:
+    inputs:
+      suite:
+        description: "Benchmark suite to run"
+        required: false
+        default: "all"
+        type: choice
+        options:
+          - all
+          - vector_ops
+          - ml_kernels
+          - similarity
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    runs-on: [self-hosted, gpu]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[all]"
+
+      - name: Run benchmarks
+        run: |
+          mkdir -p results
+          tritonflow benchmark run \
+            --suite ${{ inputs.suite }} \
+            --export-md results/benchmark_report.md \
+            --export-csv results/benchmark_results.csv
+
+      - name: Generate charts
+        run: tritonflow visualize charts results/benchmark_results.csv --output-dir results/charts
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-report-${{ github.run_number }}
+          path: results/
