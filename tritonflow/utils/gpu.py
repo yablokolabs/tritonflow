@@ -33,7 +33,7 @@ def get_device_info() -> dict[str, Any] | None:
     return {
         "name": props.name,
         "compute_capability": (props.major, props.minor),
-        "total_memory_gb": round(props.total_mem / (1024**3), 2),
+        "total_memory_gb": round(props.total_memory / (1024**3), 2),
         "sm_count": props.multi_processor_count,
         "driver_version": torch.version.cuda or "unknown",
     }
@@ -51,13 +51,12 @@ def get_device_properties(device_id: int = 0) -> dict[str, Any]:
     return {
         "name": props.name,
         "compute_capability": (props.major, props.minor),
-        "total_memory_bytes": props.total_mem,
-        "total_memory_gb": round(props.total_mem / (1024**3), 2),
+        "total_memory_bytes": props.total_memory,
+        "total_memory_gb": round(props.total_memory / (1024**3), 2),
         "sm_count": props.multi_processor_count,
         "max_threads_per_sm": props.max_threads_per_multi_processor,
-        "max_threads_per_block": props.max_threads_per_block,
         "warp_size": props.warp_size,
-        "max_shared_memory_per_block": props.max_shared_memory_per_block,
+        "max_shared_memory_per_block": props.shared_memory_per_block,
         "driver_version": torch.version.cuda or "unknown",
     }
 
@@ -89,7 +88,7 @@ def get_memory_stats(device_id: int = 0) -> dict[str, int]:
         raise RuntimeError("No CUDA GPU available")
 
     torch.cuda.set_device(device_id)
-    total = torch.cuda.get_device_properties(device_id).total_mem
+    total = torch.cuda.get_device_properties(device_id).total_memory
     allocated = torch.cuda.memory_allocated(device_id)
     reserved = torch.cuda.memory_reserved(device_id)
     free = total - allocated

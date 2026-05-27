@@ -54,12 +54,13 @@ def info_command():
 
         if is_gpu_available():
             info = get_device_info()
-            gpu_table = Table(title="GPU Information")
-            gpu_table.add_column("Property", style="cyan")
-            gpu_table.add_column("Value", style="green")
-            for k, v in info.items():
-                gpu_table.add_row(k, str(v))
-            console.print(gpu_table)
+            if info is not None:
+                gpu_table = Table(title="GPU Information")
+                gpu_table.add_column("Property", style="cyan")
+                gpu_table.add_column("Value", style="green")
+                for k, v in info.items():
+                    gpu_table.add_row(k, str(v))
+                console.print(gpu_table)
         else:
             console.print("[yellow]No GPU detected. Running in CPU-only mode.[/yellow]")
     except ImportError:
