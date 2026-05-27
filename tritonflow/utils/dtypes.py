@@ -72,7 +72,7 @@ def supports_bf16() -> bool:
     if not _TORCH_AVAILABLE or not is_gpu_available():
         return False
     props = torch.cuda.get_device_properties(0)
-    return props.major >= 8
+    return bool(props.major >= 8)
 
 
 def get_dtype_info(dtype: DType) -> dict[str, Any]:

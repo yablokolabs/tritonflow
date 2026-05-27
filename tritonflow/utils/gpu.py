@@ -18,7 +18,7 @@ def is_gpu_available() -> bool:
     """Check if a CUDA GPU is available."""
     if not _TORCH_AVAILABLE:
         return False
-    return torch.cuda.is_available()
+    return bool(torch.cuda.is_available())
 
 
 def get_device_info() -> dict[str, Any] | None:
