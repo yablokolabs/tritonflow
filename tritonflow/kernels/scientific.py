@@ -120,7 +120,10 @@ def stencil_1d(x: torch.Tensor, weights: torch.Tensor) -> torch.Tensor:
     out = torch.empty_like(x)
     grid = (triton.cdiv(n, BLOCK_SIZE),)
     _stencil_1d_kernel[grid](
-        x, weights, out, n,
+        x,
+        weights,
+        out,
+        n,
         half_w=half_w,
         W_SIZE=w_size,
         BLOCK_SIZE=BLOCK_SIZE,
@@ -131,6 +134,7 @@ def stencil_1d(x: torch.Tensor, weights: torch.Tensor) -> torch.Tensor:
 # ---------------------------------------------------------------------------
 # Batched Outer Product
 # ---------------------------------------------------------------------------
+
 
 @triton.jit
 def _batched_outer_product_kernel(

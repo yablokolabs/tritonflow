@@ -7,10 +7,14 @@ __all__ = ["embedding_lookup", "fused_embedding_layernorm"]
 
 @triton.jit
 def _embedding_lookup_kernel(
-    weight_ptr, indices_ptr, output_ptr,
+    weight_ptr,
+    indices_ptr,
+    output_ptr,
     embed_dim,
-    stride_wv, stride_wd,
-    stride_ob, stride_od,
+    stride_wv,
+    stride_wd,
+    stride_ob,
+    stride_od,
     BLOCK_D: tl.constexpr,
 ):
     pid = tl.program_id(0)
@@ -34,10 +38,14 @@ def embedding_lookup(weight: torch.Tensor, indices: torch.Tensor) -> torch.Tenso
     output = torch.empty(batch_size, embed_dim, device=weight.device, dtype=weight.dtype)
     BLOCK_D = triton.next_power_of_2(embed_dim)
     _embedding_lookup_kernel[(batch_size,)](
-        weight, indices, output,
+        weight,
+        indices,
+        output,
         embed_dim,
-        weight.stride(0), weight.stride(1),
-        output.stride(0), output.stride(1),
+        weight.stride(0),
+        weight.stride(1),
+        output.stride(0),
+        output.stride(1),
         BLOCK_D=BLOCK_D,
     )
     return output
@@ -45,10 +53,17 @@ def embedding_lookup(weight: torch.Tensor, indices: torch.Tensor) -> torch.Tenso
 
 @triton.jit
 def _fused_embedding_layernorm_kernel(
-    weight_ptr, indices_ptr, ln_w_ptr, ln_b_ptr, output_ptr,
-    embed_dim, eps,
-    stride_wv, stride_wd,
-    stride_ob, stride_od,
+    weight_ptr,
+    indices_ptr,
+    ln_w_ptr,
+    ln_b_ptr,
+    output_ptr,
+    embed_dim,
+    eps,
+    stride_wv,
+    stride_wd,
+    stride_ob,
+    stride_od,
     BLOCK_D: tl.constexpr,
 ):
     pid = tl.program_id(0)
@@ -92,10 +107,17 @@ def fused_embedding_layernorm(
     output = torch.empty(batch_size, embed_dim, device=weight.device, dtype=weight.dtype)
     BLOCK_D = triton.next_power_of_2(embed_dim)
     _fused_embedding_layernorm_kernel[(batch_size,)](
-        weight, indices, ln_weight, ln_bias, output,
-        embed_dim, eps,
-        weight.stride(0), weight.stride(1),
-        output.stride(0), output.stride(1),
+        weight,
+        indices,
+        ln_weight,
+        ln_bias,
+        output,
+        embed_dim,
+        eps,
+        weight.stride(0),
+        weight.stride(1),
+        output.stride(0),
+        output.stride(1),
         BLOCK_D=BLOCK_D,
     )
     return output

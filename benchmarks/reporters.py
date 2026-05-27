@@ -51,9 +51,7 @@ class BenchmarkReporter:
         sorted_results = sorted(self.results, key=lambda r: r.category)
         for category, group in groupby(sorted_results, key=lambda r: r.category):
             lines.append(f"## {category}\n")
-            lines.append(
-                "| Name | Size | Dtype | Triton (ms) | PyTorch (ms) | Speedup | Memory |"
-            )
+            lines.append("| Name | Size | Dtype | Triton (ms) | PyTorch (ms) | Speedup | Memory |")
             lines.append("|------|------|-------|-------------|--------------|---------|--------|")
             for r in group:
                 pt = f"{r.pytorch_ms:.3f}" if r.pytorch_ms is not None else "—"
@@ -106,9 +104,7 @@ class BenchmarkReporter:
                             else ""
                         ),
                         "speedup_vs_numpy": (
-                            f"{r.speedup_vs_numpy:.4f}"
-                            if r.speedup_vs_numpy is not None
-                            else ""
+                            f"{r.speedup_vs_numpy:.4f}" if r.speedup_vs_numpy is not None else ""
                         ),
                         "memory_bytes": r.memory_bytes if r.memory_bytes is not None else "",
                     }

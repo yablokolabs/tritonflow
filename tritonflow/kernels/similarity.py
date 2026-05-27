@@ -7,10 +7,14 @@ __all__ = ["cosine_similarity", "l2_distance", "top_k_similarity"]
 
 @triton.jit
 def _cosine_similarity_kernel(
-    x_ptr, y_ptr, out_ptr,
+    x_ptr,
+    y_ptr,
+    out_ptr,
     D,
-    stride_xm, stride_xd,
-    stride_ym, stride_yd,
+    stride_xm,
+    stride_xd,
+    stride_ym,
+    stride_yd,
     BLOCK_D: tl.constexpr,
 ):
     pid = tl.program_id(0)
@@ -42,9 +46,14 @@ def cosine_similarity(x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
     out = torch.empty(M, device=x.device, dtype=torch.float32)
     BLOCK_D = min(triton.next_power_of_2(D), 1024)
     _cosine_similarity_kernel[(M,)](
-        x, y, out, D,
-        x.stride(0), x.stride(1),
-        y.stride(0), y.stride(1),
+        x,
+        y,
+        out,
+        D,
+        x.stride(0),
+        x.stride(1),
+        y.stride(0),
+        y.stride(1),
         BLOCK_D=BLOCK_D,
     )
     return out
@@ -52,10 +61,14 @@ def cosine_similarity(x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
 
 @triton.jit
 def _l2_distance_kernel(
-    x_ptr, y_ptr, out_ptr,
+    x_ptr,
+    y_ptr,
+    out_ptr,
     D,
-    stride_xm, stride_xd,
-    stride_ym, stride_yd,
+    stride_xm,
+    stride_xd,
+    stride_ym,
+    stride_yd,
     BLOCK_D: tl.constexpr,
 ):
     pid = tl.program_id(0)
@@ -83,9 +96,14 @@ def l2_distance(x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
     out = torch.empty(M, device=x.device, dtype=torch.float32)
     BLOCK_D = min(triton.next_power_of_2(D), 1024)
     _l2_distance_kernel[(M,)](
-        x, y, out, D,
-        x.stride(0), x.stride(1),
-        y.stride(0), y.stride(1),
+        x,
+        y,
+        out,
+        D,
+        x.stride(0),
+        x.stride(1),
+        y.stride(0),
+        y.stride(1),
         BLOCK_D=BLOCK_D,
     )
     return out
@@ -93,11 +111,17 @@ def l2_distance(x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
 
 @triton.jit
 def _batched_cosine_sim_kernel(
-    queries_ptr, keys_ptr, out_ptr,
-    N, D,
-    stride_qm, stride_qd,
-    stride_kn, stride_kd,
-    stride_om, stride_on,
+    queries_ptr,
+    keys_ptr,
+    out_ptr,
+    N,
+    D,
+    stride_qm,
+    stride_qd,
+    stride_kn,
+    stride_kd,
+    stride_om,
+    stride_on,
     BLOCK_D: tl.constexpr,
 ):
     pid_m = tl.program_id(0)
@@ -140,11 +164,17 @@ def top_k_similarity(
     BLOCK_D = min(triton.next_power_of_2(D), 1024)
     grid = (M, N)
     _batched_cosine_sim_kernel[grid](
-        queries, keys, sim_matrix,
-        N, D,
-        queries.stride(0), queries.stride(1),
-        keys.stride(0), keys.stride(1),
-        sim_matrix.stride(0), sim_matrix.stride(1),
+        queries,
+        keys,
+        sim_matrix,
+        N,
+        D,
+        queries.stride(0),
+        queries.stride(1),
+        keys.stride(0),
+        keys.stride(1),
+        sim_matrix.stride(0),
+        sim_matrix.stride(1),
         BLOCK_D=BLOCK_D,
     )
 

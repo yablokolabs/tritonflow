@@ -59,9 +59,7 @@ def gelu(x: torch.Tensor) -> torch.Tensor:
 
 
 @triton.jit
-def _fused_gelu_bias_kernel(
-    x_ptr, bias_ptr, output_ptr, n_rows, N, BLOCK_SIZE: tl.constexpr
-):
+def _fused_gelu_bias_kernel(x_ptr, bias_ptr, output_ptr, n_rows, N, BLOCK_SIZE: tl.constexpr):
     pid = tl.program_id(0)
     row = pid // triton.cdiv(N, BLOCK_SIZE)
     col_block = pid % triton.cdiv(N, BLOCK_SIZE)

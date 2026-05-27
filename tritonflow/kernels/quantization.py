@@ -7,11 +7,18 @@ __all__ = ["quantized_matmul_fp16", "dynamic_quantize", "quantized_matmul_int8"]
 
 @triton.jit
 def _quantized_matmul_fp16_kernel(
-    a_ptr, b_ptr, c_ptr,
-    M, N, K,
-    stride_am, stride_ak,
-    stride_bk, stride_bn,
-    stride_cm, stride_cn,
+    a_ptr,
+    b_ptr,
+    c_ptr,
+    M,
+    N,
+    K,
+    stride_am,
+    stride_ak,
+    stride_bk,
+    stride_bn,
+    stride_cm,
+    stride_cn,
     BLOCK_M: tl.constexpr,
     BLOCK_N: tl.constexpr,
     BLOCK_K: tl.constexpr,
@@ -52,22 +59,35 @@ def quantized_matmul_fp16(a: torch.Tensor, b: torch.Tensor) -> torch.Tensor:
     BLOCK_M, BLOCK_N, BLOCK_K = 64, 64, 32
     grid = (triton.cdiv(M, BLOCK_M), triton.cdiv(N, BLOCK_N))
     _quantized_matmul_fp16_kernel[grid](
-        a, b, c,
-        M, N, K,
-        a.stride(0), a.stride(1),
-        b.stride(0), b.stride(1),
-        c.stride(0), c.stride(1),
-        BLOCK_M=BLOCK_M, BLOCK_N=BLOCK_N, BLOCK_K=BLOCK_K,
+        a,
+        b,
+        c,
+        M,
+        N,
+        K,
+        a.stride(0),
+        a.stride(1),
+        b.stride(0),
+        b.stride(1),
+        c.stride(0),
+        c.stride(1),
+        BLOCK_M=BLOCK_M,
+        BLOCK_N=BLOCK_N,
+        BLOCK_K=BLOCK_K,
     )
     return c
 
 
 @triton.jit
 def _dynamic_quantize_kernel(
-    x_ptr, out_ptr, scale_ptr,
+    x_ptr,
+    out_ptr,
+    scale_ptr,
     cols,
-    stride_xm, stride_xd,
-    stride_om, stride_od,
+    stride_xm,
+    stride_xd,
+    stride_om,
+    stride_od,
     BLOCK_D: tl.constexpr,
 ):
     pid = tl.program_id(0)
@@ -110,10 +130,14 @@ def dynamic_quantize(x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
     q_float = torch.empty(M, D, device=x.device, dtype=torch.float32)
     BLOCK_D = min(triton.next_power_of_2(D), 1024)
     _dynamic_quantize_kernel[(M,)](
-        x, q_float, scales,
+        x,
+        q_float,
+        scales,
         D,
-        x.stride(0), x.stride(1),
-        q_float.stride(0), q_float.stride(1),
+        x.stride(0),
+        x.stride(1),
+        q_float.stride(0),
+        q_float.stride(1),
         BLOCK_D=BLOCK_D,
     )
     quantized = q_float.to(torch.int8)
@@ -122,12 +146,20 @@ def dynamic_quantize(x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
 
 @triton.jit
 def _quantized_matmul_int8_kernel(
-    a_ptr, b_ptr, c_ptr,
-    scale_a_ptr, scale_b_ptr,
-    M, N, K,
-    stride_am, stride_ak,
-    stride_bk, stride_bn,
-    stride_cm, stride_cn,
+    a_ptr,
+    b_ptr,
+    c_ptr,
+    scale_a_ptr,
+    scale_b_ptr,
+    M,
+    N,
+    K,
+    stride_am,
+    stride_ak,
+    stride_bk,
+    stride_bn,
+    stride_cm,
+    stride_cn,
     BLOCK_M: tl.constexpr,
     BLOCK_N: tl.constexpr,
     BLOCK_K: tl.constexpr,
@@ -177,12 +209,22 @@ def quantized_matmul_int8(
     BLOCK_M, BLOCK_N, BLOCK_K = 64, 64, 32
     grid = (triton.cdiv(M, BLOCK_M), triton.cdiv(N, BLOCK_N))
     _quantized_matmul_int8_kernel[grid](
-        a, b, c,
-        scale_a, scale_b,
-        M, N, K,
-        a.stride(0), a.stride(1),
-        b.stride(0), b.stride(1),
-        c.stride(0), c.stride(1),
-        BLOCK_M=BLOCK_M, BLOCK_N=BLOCK_N, BLOCK_K=BLOCK_K,
+        a,
+        b,
+        c,
+        scale_a,
+        scale_b,
+        M,
+        N,
+        K,
+        a.stride(0),
+        a.stride(1),
+        b.stride(0),
+        b.stride(1),
+        c.stride(0),
+        c.stride(1),
+        BLOCK_M=BLOCK_M,
+        BLOCK_N=BLOCK_N,
+        BLOCK_K=BLOCK_K,
     )
     return c

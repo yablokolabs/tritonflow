@@ -1,7 +1,6 @@
 """Tests for utility modules (CPU-runnable)."""
 
 
-
 class TestGPUUtils:
     def test_is_gpu_available_returns_bool(self):
         from tritonflow.utils.gpu import is_gpu_available

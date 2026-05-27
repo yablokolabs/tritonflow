@@ -88,7 +88,9 @@ def estimate_occupancy(
     max_regs_per_sm = 65536
     max_blocks_by_regs = max_regs_per_sm // regs_per_block if regs_per_block > 0 else 0
 
-    active_blocks = min(max_blocks_by_warps, max_blocks_by_smem, max_blocks_by_regs, _MAX_BLOCKS_PER_SM)
+    active_blocks = min(
+        max_blocks_by_warps, max_blocks_by_smem, max_blocks_by_regs, _MAX_BLOCKS_PER_SM
+    )
     active_blocks = max(active_blocks, 0)
 
     active_warps = active_blocks * warps_per_block

@@ -36,9 +36,7 @@ def validate_tensor(tensor: Any, spec: TensorSpec) -> None:
         raise TypeError(f"Expected torch.Tensor, got {type(tensor).__name__}")
 
     if spec.shape is not None and tuple(tensor.shape) != spec.shape:
-        raise ValueError(
-            f"Expected shape {spec.shape}, got {tuple(tensor.shape)}"
-        )
+        raise ValueError(f"Expected shape {spec.shape}, got {tuple(tensor.shape)}")
 
     if spec.dtype is not None:
         actual_dtype = str(tensor.dtype).replace("torch.", "")
@@ -53,13 +51,9 @@ def validate_tensor(tensor: Any, spec: TensorSpec) -> None:
 
     ndim = tensor.ndim
     if spec.min_ndim is not None and ndim < spec.min_ndim:
-        raise ValueError(
-            f"Expected at least {spec.min_ndim} dimensions, got {ndim}"
-        )
+        raise ValueError(f"Expected at least {spec.min_ndim} dimensions, got {ndim}")
     if spec.max_ndim is not None and ndim > spec.max_ndim:
-        raise ValueError(
-            f"Expected at most {spec.max_ndim} dimensions, got {ndim}"
-        )
+        raise ValueError(f"Expected at most {spec.max_ndim} dimensions, got {ndim}")
 
 
 def validate_same_device(*tensors: Any) -> None:
@@ -94,6 +88,4 @@ def validate_contiguous(tensor: Any) -> None:
     if not isinstance(tensor, torch.Tensor):
         raise TypeError(f"Expected torch.Tensor, got {type(tensor).__name__}")
     if not tensor.is_contiguous():
-        raise ValueError(
-            f"Tensor with shape {tuple(tensor.shape)} is not contiguous"
-        )
+        raise ValueError(f"Tensor with shape {tuple(tensor.shape)} is not contiguous")

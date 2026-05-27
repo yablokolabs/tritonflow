@@ -40,21 +40,34 @@ def matrix_transpose(x: torch.Tensor, BLOCK: int = 32) -> torch.Tensor:
     output = torch.empty(N, M, device=x.device, dtype=x.dtype)
     grid = (triton.cdiv(M, BLOCK), triton.cdiv(N, BLOCK))
     _matrix_transpose_kernel[grid](
-        x, output, M, N,
-        x.stride(0), x.stride(1),
-        output.stride(0), output.stride(1),
-        BLOCK_M=BLOCK, BLOCK_N=BLOCK,
+        x,
+        output,
+        M,
+        N,
+        x.stride(0),
+        x.stride(1),
+        output.stride(0),
+        output.stride(1),
+        BLOCK_M=BLOCK,
+        BLOCK_N=BLOCK,
     )
     return output
 
 
 @triton.jit
 def _matmul_kernel(
-    a_ptr, b_ptr, c_ptr,
-    M, N, K,
-    stride_am, stride_ak,
-    stride_bk, stride_bn,
-    stride_cm, stride_cn,
+    a_ptr,
+    b_ptr,
+    c_ptr,
+    M,
+    N,
+    K,
+    stride_am,
+    stride_ak,
+    stride_bk,
+    stride_bn,
+    stride_cm,
+    stride_cn,
     BLOCK_M: tl.constexpr,
     BLOCK_N: tl.constexpr,
     BLOCK_K: tl.constexpr,
@@ -95,11 +108,20 @@ def matmul(a: torch.Tensor, b: torch.Tensor) -> torch.Tensor:
     BLOCK_M, BLOCK_N, BLOCK_K = 64, 64, 32
     grid = (triton.cdiv(M, BLOCK_M), triton.cdiv(N, BLOCK_N))
     _matmul_kernel[grid](
-        a, b, c,
-        M, N, K,
-        a.stride(0), a.stride(1),
-        b.stride(0), b.stride(1),
-        c.stride(0), c.stride(1),
-        BLOCK_M=BLOCK_M, BLOCK_N=BLOCK_N, BLOCK_K=BLOCK_K,
+        a,
+        b,
+        c,
+        M,
+        N,
+        K,
+        a.stride(0),
+        a.stride(1),
+        b.stride(0),
+        b.stride(1),
+        c.stride(0),
+        c.stride(1),
+        BLOCK_M=BLOCK_M,
+        BLOCK_N=BLOCK_N,
+        BLOCK_K=BLOCK_K,
     )
     return c

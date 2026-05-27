@@ -13,6 +13,7 @@ try:
 except ImportError:
     _HAS_TORCH = False
 
+
 def _torch_dtype(name: str) -> torch.dtype:
     return getattr(torch, name)
 
@@ -26,6 +27,7 @@ def _make_tensor(shape: tuple[int, ...], dtype: str = "float32") -> torch.Tensor
 # ------------------------------------------------------------------
 # Vector operations
 # ------------------------------------------------------------------
+
 
 def vector_ops_suite() -> list[dict]:
     """Benchmarks for vector operations (vector_add, fused_add_mul, batched_sum)."""
@@ -82,6 +84,7 @@ def vector_ops_suite() -> list[dict]:
 # ------------------------------------------------------------------
 # ML kernels
 # ------------------------------------------------------------------
+
 
 def ml_kernels_suite() -> list[dict]:
     """Benchmarks for ML kernels (softmax, gelu, layernorm)."""
@@ -141,6 +144,7 @@ def ml_kernels_suite() -> list[dict]:
 # Similarity operations
 # ------------------------------------------------------------------
 
+
 def similarity_suite() -> list[dict]:
     """Benchmarks for similarity operations (cosine, dot product)."""
     from tritonflow.kernels import cosine_similarity, dot_product
@@ -182,6 +186,7 @@ def similarity_suite() -> list[dict]:
 # ------------------------------------------------------------------
 # Combined
 # ------------------------------------------------------------------
+
 
 def all_suites() -> list[dict]:
     """All benchmarks combined."""

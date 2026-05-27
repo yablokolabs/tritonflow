@@ -13,7 +13,9 @@ console = Console()
 
 @app.command("run")
 def run_benchmarks(
-    suite: str = typer.Option("all", help="Benchmark suite: all, vector_ops, ml_kernels, similarity"),
+    suite: str = typer.Option(
+        "all", help="Benchmark suite: all, vector_ops, ml_kernels, similarity"
+    ),
     iterations: int = typer.Option(100, help="Number of benchmark iterations"),
     warmup: int = typer.Option(10, help="Number of warmup iterations"),
     export_md: str = typer.Option(None, help="Export results as Markdown to this path"),

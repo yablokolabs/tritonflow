@@ -9,12 +9,25 @@ __all__ = ["fused_attention", "flash_attention_fwd"]
 
 @triton.jit
 def _fused_attention_kernel(
-    q_ptr, k_ptr, v_ptr, o_ptr,
-    seq_len, head_dim, scale,
-    stride_qb, stride_qs, stride_qd,
-    stride_kb, stride_ks, stride_kd,
-    stride_vb, stride_vs, stride_vd,
-    stride_ob, stride_os, stride_od,
+    q_ptr,
+    k_ptr,
+    v_ptr,
+    o_ptr,
+    seq_len,
+    head_dim,
+    scale,
+    stride_qb,
+    stride_qs,
+    stride_qd,
+    stride_kb,
+    stride_ks,
+    stride_kd,
+    stride_vb,
+    stride_vs,
+    stride_vd,
+    stride_ob,
+    stride_os,
+    stride_od,
     BLOCK_D: tl.constexpr,
     BLOCK_S: tl.constexpr,
 ):
@@ -38,7 +51,9 @@ def _fused_attention_kernel(
         s_mask = offs_s < seq_len
 
         # Load K block: [BLOCK_S, BLOCK_D]
-        k_ptrs = k_ptr + pid_b * stride_kb + offs_s[:, None] * stride_ks + offs_d[None, :] * stride_kd
+        k_ptrs = (
+            k_ptr + pid_b * stride_kb + offs_s[:, None] * stride_ks + offs_d[None, :] * stride_kd
+        )
         k_mask = s_mask[:, None] & d_mask[None, :]
         k = tl.load(k_ptrs, mask=k_mask, other=0.0)
 
@@ -53,7 +68,9 @@ def _fused_attention_kernel(
         exp_scores = tl.where(s_mask, exp_scores, 0.0)
 
         # Load V block: [BLOCK_S, BLOCK_D]
-        v_ptrs = v_ptr + pid_b * stride_vb + offs_s[:, None] * stride_vs + offs_d[None, :] * stride_vd
+        v_ptrs = (
+            v_ptr + pid_b * stride_vb + offs_s[:, None] * stride_vs + offs_d[None, :] * stride_vd
+        )
         v = tl.load(v_ptrs, mask=k_mask, other=0.0)
 
         # Update accumulator
@@ -81,25 +98,52 @@ def fused_attention(
     BLOCK_S = 64
     grid = (batch, seq_len)
     _fused_attention_kernel[grid](
-        q, k, v, o,
-        seq_len, head_dim, scale,
-        q.stride(0), q.stride(1), q.stride(2),
-        k.stride(0), k.stride(1), k.stride(2),
-        v.stride(0), v.stride(1), v.stride(2),
-        o.stride(0), o.stride(1), o.stride(2),
-        BLOCK_D=BLOCK_D, BLOCK_S=BLOCK_S,
+        q,
+        k,
+        v,
+        o,
+        seq_len,
+        head_dim,
+        scale,
+        q.stride(0),
+        q.stride(1),
+        q.stride(2),
+        k.stride(0),
+        k.stride(1),
+        k.stride(2),
+        v.stride(0),
+        v.stride(1),
+        v.stride(2),
+        o.stride(0),
+        o.stride(1),
+        o.stride(2),
+        BLOCK_D=BLOCK_D,
+        BLOCK_S=BLOCK_S,
     )
     return o
 
 
 @triton.jit
 def _flash_attention_fwd_kernel(
-    q_ptr, k_ptr, v_ptr, o_ptr,
-    seq_len, head_dim, scale,
-    stride_qb, stride_qs, stride_qd,
-    stride_kb, stride_ks, stride_kd,
-    stride_vb, stride_vs, stride_vd,
-    stride_ob, stride_os, stride_od,
+    q_ptr,
+    k_ptr,
+    v_ptr,
+    o_ptr,
+    seq_len,
+    head_dim,
+    scale,
+    stride_qb,
+    stride_qs,
+    stride_qd,
+    stride_kb,
+    stride_ks,
+    stride_kd,
+    stride_vb,
+    stride_vs,
+    stride_vd,
+    stride_ob,
+    stride_os,
+    stride_od,
     BLOCK_Q: tl.constexpr,
     BLOCK_KV: tl.constexpr,
     BLOCK_D: tl.constexpr,
@@ -125,7 +169,9 @@ def _flash_attention_fwd_kernel(
         kv_mask = offs_kv < seq_len
 
         # Load K block: [BLOCK_KV, BLOCK_D]
-        k_ptrs = k_ptr + pid_b * stride_kb + offs_kv[:, None] * stride_ks + offs_d[None, :] * stride_kd
+        k_ptrs = (
+            k_ptr + pid_b * stride_kb + offs_kv[:, None] * stride_ks + offs_d[None, :] * stride_kd
+        )
         k = tl.load(k_ptrs, mask=kv_mask[:, None] & (offs_d[None, :] < head_dim), other=0.0)
 
         # S = Q @ K^T: [BLOCK_Q, BLOCK_KV]
@@ -142,7 +188,9 @@ def _flash_attention_fwd_kernel(
         p = tl.exp(s - m_new[:, None])
 
         # Load V block: [BLOCK_KV, BLOCK_D]
-        v_ptrs = v_ptr + pid_b * stride_vb + offs_kv[:, None] * stride_vs + offs_d[None, :] * stride_vd
+        v_ptrs = (
+            v_ptr + pid_b * stride_vb + offs_kv[:, None] * stride_vs + offs_d[None, :] * stride_vd
+        )
         v = tl.load(v_ptrs, mask=kv_mask[:, None] & (offs_d[None, :] < head_dim), other=0.0)
 
         # Update accumulator
@@ -171,12 +219,27 @@ def flash_attention_fwd(
     BLOCK_D = triton.next_power_of_2(head_dim)
     grid = (batch, triton.cdiv(seq_len, BLOCK_Q))
     _flash_attention_fwd_kernel[grid](
-        q, k, v, o,
-        seq_len, head_dim, scale,
-        q.stride(0), q.stride(1), q.stride(2),
-        k.stride(0), k.stride(1), k.stride(2),
-        v.stride(0), v.stride(1), v.stride(2),
-        o.stride(0), o.stride(1), o.stride(2),
-        BLOCK_Q=BLOCK_Q, BLOCK_KV=BLOCK_KV, BLOCK_D=BLOCK_D,
+        q,
+        k,
+        v,
+        o,
+        seq_len,
+        head_dim,
+        scale,
+        q.stride(0),
+        q.stride(1),
+        q.stride(2),
+        k.stride(0),
+        k.stride(1),
+        k.stride(2),
+        v.stride(0),
+        v.stride(1),
+        v.stride(2),
+        o.stride(0),
+        o.stride(1),
+        o.stride(2),
+        BLOCK_Q=BLOCK_Q,
+        BLOCK_KV=BLOCK_KV,
+        BLOCK_D=BLOCK_D,
     )
     return o
