@@ -1,7 +1,7 @@
 """Shared test fixtures and configuration."""
 
-import pytest
 import numpy as np
+import pytest
 
 try:
     import torch
@@ -11,7 +11,7 @@ except ImportError:
     HAS_TORCH = False
 
 try:
-    import triton
+    import triton  # noqa: F401
 
     HAS_TRITON = True
 except ImportError:

@@ -1,6 +1,5 @@
 """Tests for utility modules (CPU-runnable)."""
 
-import pytest
 
 
 class TestGPUUtils:
@@ -11,7 +10,7 @@ class TestGPUUtils:
         assert isinstance(result, bool)
 
     def test_get_device_info_without_gpu(self):
-        from tritonflow.utils.gpu import is_gpu_available, get_device_info
+        from tritonflow.utils.gpu import get_device_info, is_gpu_available
 
         info = get_device_info()
         if not is_gpu_available():

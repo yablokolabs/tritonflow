@@ -1,6 +1,5 @@
 """Tests for benchmark framework (CPU-runnable)."""
 
-import pytest
 import time
 
 

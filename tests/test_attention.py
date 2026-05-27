@@ -1,8 +1,8 @@
 """Tests for attention kernels."""
 
-import pytest
 import math
-from tests.conftest import gpu, make_tensor, assert_close, HAS_TORCH
+
+from tests.conftest import HAS_TORCH, assert_close, gpu, make_tensor
 
 if HAS_TORCH:
     import torch
@@ -20,28 +20,28 @@ def _reference_attention(q, k, v, scale=None):
 @gpu
 class TestFusedAttention:
     def test_basic(self):
-        B, S, D = 2, 32, 64
-        q = make_tensor(B, S, D)
-        k = make_tensor(B, S, D)
-        v = make_tensor(B, S, D)
+        batch, seq, dim = 2, 32, 64
+        q = make_tensor(batch, seq, dim)
+        k = make_tensor(batch, seq, dim)
+        v = make_tensor(batch, seq, dim)
         from tritonflow.kernels.attention import fused_attention
 
         result = fused_attention(q, k, v)
         expected = _reference_attention(q, k, v)
-        assert result.shape == (B, S, D)
+        assert result.shape == (batch, seq, dim)
         assert_close(result, expected, atol=1e-2, rtol=1e-2)
 
 
 @gpu
 class TestFlashAttention:
     def test_basic(self):
-        B, S, D = 2, 64, 32
-        q = make_tensor(B, S, D)
-        k = make_tensor(B, S, D)
-        v = make_tensor(B, S, D)
+        batch, seq, dim = 2, 64, 32
+        q = make_tensor(batch, seq, dim)
+        k = make_tensor(batch, seq, dim)
+        v = make_tensor(batch, seq, dim)
         from tritonflow.kernels.attention import flash_attention_fwd
 
         result = flash_attention_fwd(q, k, v)
         expected = _reference_attention(q, k, v)
-        assert result.shape == (B, S, D)
+        assert result.shape == (batch, seq, dim)
         assert_close(result, expected, atol=1e-2, rtol=1e-2)

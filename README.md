@@ -4,7 +4,7 @@
 
 **High-performance GPU kernels for modern AI, vector search, analytics, and scientific computing.**
 
-Built with [OpenAI Triton](https://github.com/openai/triton) · By [Yabloko Labs](https://github.com/yablokolabs)
+Built with [OpenAI Triton](https://openai.com/index/triton/) · By [Yabloko Labs](https://github.com/yablokolabs)
 
 [![CI](https://github.com/yablokolabs/tritonflow/actions/workflows/ci.yml/badge.svg)](https://github.com/yablokolabs/tritonflow/actions/workflows/ci.yml)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
@@ -21,7 +21,7 @@ TritonFlow is a modular GPU acceleration library that provides optimized Triton 
 
 ### Why Triton?
 
-[OpenAI Triton](https://openai.com/research/triton) compiles Python-level kernel definitions into optimized GPU machine code. Compared to raw CUDA:
+[OpenAI Triton](https://openai.com/index/triton/) compiles Python-level kernel definitions into optimized GPU machine code. Compared to raw CUDA:
 
 - **~90% less boilerplate** — no manual memory management, grid/block configuration is declarative
 - **Portable across GPU architectures** — Triton's compiler handles SM-specific tuning

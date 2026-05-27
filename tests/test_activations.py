@@ -1,8 +1,6 @@
 """Tests for activation kernels."""
 
-import pytest
-import math
-from tests.conftest import gpu, make_tensor, assert_close, HAS_TORCH
+from tests.conftest import HAS_TORCH, assert_close, gpu, make_tensor
 
 if HAS_TORCH:
     import torch
